@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate School Subject Quiz Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #1a73e8;
+            margin-top: 0;
+        }
+        .score-badge {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .prompt-text {
+            font-size: 1.2rem;
+            color: #3c4043;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .option-btn {
+            background-color: #ffffff;
+            border: 2px solid #dadce0;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #1a73e8;
+        }
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            min-height: 24px;
+        }
+        .correct { color: #137333; }
+        .incorrect { color: #c5221f; }
+        .hidden { display: none; }
+        .restart-btn {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .restart-btn:hover { background-color: #1557b0; }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <h1>🎓 Quiz Game</h1>
+        <div id="score-display" class="score-badge hidden">Score: 0</div>
+        
+        <div id="quiz-box">
+            <!-- Content will be dynamically inserted here via JavaScript -->
+        </div>
+        
+        <div id="feedback-box" class="feedback"></div>
+    </div>
+
+    <script>
+        // Quiz data mapping out the converted Python paths
+        const subjectsData = {
+            math: {
+                welcome: "You will now be asked a series of math questions!",
+                badge: "Mathematical genius!",
+                questions: [
+                    { q: "What is 42 * 3?", a: "134", b: "126", c: "104", d: "138", correct: "b" },
+                    { q: "Solve: 134 - 126.", a: "16", b: "14", c: "8", d: "12", correct: "c" },
+                    { q: "Solve for x: 2x + 2 = 12.", a: "7", b: "6", c: "2", d: "5", correct: "d" },
+                    { q: "Solve for x: x² - 9 = 0.", a: "+- 3", b: "4", c: "3, -3", d: "12", correct: "c" }, // accepted both c & a in original python code
+                    { q: "Simplify: 51/34.", a: "2/3", b: "4/3", c: "3/2", d: "3/4", correct: "c" },
+                    { q: "Solve for x: x² - 8x + 16 = 0.", a: "4", b: "2", c: "8", d: "16", correct: "a" }
+                ]
+            },
+            science: {
+                welcome: "You will now be asked a series of science questions!",
+                badge: "Scientific genius!",
+                questions: [
+                    { q: "Who invented the laws of motion?", a: "Albert Einstein", b: "John Locke", c: "Marie Curie", d: "Sir Isaac Newton", correct: "d" },
+                    { q: "Which color absorbs the most wavelengths of light?", a: "Blue", b: "Black", c: "White", d: "Gray", correct: "b" },
+                    { q: "What was one of Einstein's ideas?", a: "Theory of Relativity", b: "Heliocentric Model", c: "The Periodic Table", d: "Ideal Gas Law", correct: "a" },
+                    { q: "Which gas law relates pressure and volume?", a: "Gay-Lussac's Law", b: "Charles Law", c: "Boyles Law", d: "Combined Gas Law", correct: "c" },
+                    { q: "Which phase change is exothermic?", a: "Vaporization", b: "Melting", c: "Sublimation", d: "Deposition", correct: "d" },
+                    { q: "What is a protein's monomer?", a: "Amino Acid", b: "Monosaccharide", c: "No True Monomer", d: "Nucleic Acid", correct: "a" }
+                ]
+            },
+            english: {
+                welcome: "You will now be asked a series of english questions!",
+                badge: "English Master!",
+                questions: [
+                    { q: "Which comparison uses keywords 'like' or 'as'?", a: "Metaphor", b: "Simile", c: "Hyperbole", d: "Personification", correct: "b" },
+                    { q: "What does the 'E' in the acronym 'CER' stand for?", a: "Examples", b: "Explanation", c: "Evidence", d: "Extol", correct: "c" },
+                    { q: "What is a hook in the context of an essay?", a: "Something you use to catch fish", b: "A tool to hold ideas", c: "The introduction hook to an essay", d: "The closing of an essay", correct: "c" },
+                    { q: "What is a hyperbole?", a: "A comparison between two unlike things", b: "A claim for an article", c: "A human trait in an object", d: "An extreme exaggeration", correct: "d" },
+                    { q: "What is the correct MLA citation form for a book?", a: "(Title, Page #)", b: "(Tile, Page #)", c: "(Title Page #)", d: "Title Page #", correct: "c" },
+                    { q: "What is the correct MLA format for the title of an article?", a: "'Title'", b: "Title", c: "title", d: "TITLE", correct: "a" }
+                ]
+            },
+            social: {
+                welcome: "You will now be asked a series of social studies questions!",
+                badge: "History Master!",
+                questions: [
+                    { q: "What is the first amendment of the Bill of Rights?", a: "Right to a speedy trial", b: "Warrant to search property", c: "Freedom of speech", d: "Right to bear weapons", correct: "c" },
+                    { q: "Which enlightenment thinker developed the idea of the social contract?", a: "Jean-Jacques Rousseau", b: "Sir Francis Bacon", c: "John Locke", d: "Voltaire", correct: "a" },
+                    { q: "Which form of government is ruled by a single, unchecked leader?", a: "Democracy", b: "Oligarchy", c: "Autocracy", d: "Republic", correct: "c" },
+                    { q: "In what year was the United States Declaration of Independence signed?", a: "1787", b: "1776", c: "1492", d: "1812", correct: "b" }
+                ]
+            }
+        };
+
+        let score = 0;
+        let currentSubject = null;
+        let currentQuestionIndex = 0;
+
+        const quizBox = document.getElementById('quiz-box');
+        const feedbackBox = document.getElementById('feedback-box');
+        const scoreDisplay = document.getElementById('score-display');
+
+        // Step 1: Initialize Subject Picker Screen
+        function loadSubjectSelection() {
+            score = 0;
+            currentSubject = null;
+            currentQuestionIndex = 0;
+            feedbackBox.innerHTML = "";
+            scoreDisplay.classList.add('hidden');
+
+            quizBox.innerHTML = `
+                <div class="prompt-text">Welcome to the quiz game!<br>What is your favorite school subject?</div>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="startQuiz('math')">a. Math</button>
+                    <button class="option-btn" onclick="startQuiz('science')">b. Science</button>
+                    <button class="option-btn" onclick="startQuiz('english')">c. English</button>
+                    <button class="option-btn" onclick="startQuiz('social')">d. Social Studies</button>
+                </div>
+            `;
+        }
+
+        // Step 2: Transition into the chosen subject path
+        function startQuiz(subject) {
+            currentSubject = subjectsData[subject];
+            feedbackBox.className = "feedback correct";
+            feedbackBox.innerText = currentSubject.welcome;
+            
+            scoreDisplay.innerText = `Score: ${score}`;
+            scoreDisplay.classList.remove('hidden');
+
+            setTimeout(() => {
+                feedbackBox.innerText = "";
+                loadQuestion();
+            }, 1800);
+        }
+
+        // Step 3: Serve the items sequentially 
+        function loadQuestion() {
+            feedbackBox.innerText = "";
+            const questions = currentSubject.questions;
+
+            if (currentQuestionIndex < questions.length) {
+                const currentQ = questions[currentQuestionIndex];
+                quizBox.innerHTML = `
+                    <div class="prompt-text">${currentQ.q}</div>
+                    <div class="options-grid">
+                        <button class="option-btn" onclick="checkAnswer('a')"><b>a.</b> ${currentQ.a}</button>
+                        <button class="option-btn" onclick="checkAnswer('b')"><b>b.</b> ${currentQ.b}</button>
+                        <button class="option-btn" onclick="checkAnswer('c')"><b>c.</b> ${currentQ.c}</button>
+                        <button class="option-btn" onclick="checkAnswer('d')"><b>d.</b> ${currentQ.d}</button>
+                    </div>
+                `;
+            } else {
+                showFinalResults();
